@@ -85,7 +85,8 @@ class MediaTableViewController: UITableViewController, GCKSessionManagerListener
       self.queueAdded = true
     } else if !visible && self.queueAdded {
       var barItems = self.navigationItem.rightBarButtonItems
-      barItems?.remove(at: barItems?.index(of: self.queueButton) ?? -1)
+      let indexToRemove: Int = barItems?.index(of: self.queueButton) ?? -1
+      barItems?.remove(at: indexToRemove)
       self.navigationItem.rightBarButtonItems = barItems
       self.queueAdded = false
     }

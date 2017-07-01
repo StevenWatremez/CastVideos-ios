@@ -15,11 +15,6 @@ import UIKit
 import AVFoundation
 import GoogleCast
 
-/* Time to wait before hiding the toolbar. UX is that this number is effectively
- * doubled. */
-var kToolbarDelay: Int = 3
-var kToolbarHeight: CGFloat = 44
-
 protocol LocalPlayerViewDelegate: NSObjectProtocol {
   func setNavigationBarStyle(_ style: LPVNavBarStyle)
   func hideNavigationBar(_ hide: Bool)
@@ -38,9 +33,17 @@ enum LocalPlayerState: Int {
   case paused
 }
 
-/* UIView for displaying a local player or splash screen. */
 @objc(LocalPlayerView)
+/// UIView for displaying a local player or splash screen.
 class LocalPlayerView: UIView {
+  
+  enum Constants {
+    /// Time to wait before hiding the toolbar. UX is that this
+    /// number is effectively doubled.
+    static let toolbarDelay: Int = 3
+    static let toolbarHeight: CGFloat = 44
+  }
+  
   private var mediaPlayer: AVPlayer?
   private var mediaPlayerLayer: AVPlayerLayer?
   private var mediaTimeObserver: Any?
@@ -53,7 +56,8 @@ class LocalPlayerView: UIView {
 
   @IBOutlet weak var viewAspectRatio: NSLayoutConstraint?
   var splashImage: UIImageView!
-  /* The UIView used for receiving control input. */
+  
+  /// The UIView used for receiving control input.
   var controlView: UIView!
   var singleFingerTap: UIGestureRecognizer!
   var isRecentInteraction: Bool = false
@@ -114,7 +118,7 @@ class LocalPlayerView: UIView {
     controlView.addGestureRecognizer(singleFingerTap)
     addSubview(controlView)
     // Play overlay that users can tap to get started.
-    let giantPlayButton = UIImage(named: "play_circle")
+    let giantPlayButton = #imageLiteral(resourceName: "play_circle.png")
     splashPlayButton = UIButton(type: .system)
     splashPlayButton.frame = fullFrame()
     splashPlayButton.contentMode = .center
@@ -206,8 +210,8 @@ class LocalPlayerView: UIView {
 
   /* Update the frame for the toolbar. */
   func layoutToolbar(_ frame: CGRect) {
-    toolbarView.frame = CGRect(x: 0, y: frame.size.height - kToolbarHeight,
-                               width: frame.size.width, height: kToolbarHeight)
+    toolbarView.frame = CGRect(x: 0, y: frame.size.height - Constants.toolbarHeight,
+                               width: frame.size.width, height: Constants.toolbarHeight)
     gradientLayer?.frame = toolbarView.bounds
   }
 
@@ -373,7 +377,7 @@ class LocalPlayerView: UIView {
       if controlView.isHidden {
         didTouchControl(nil)
         return nil
-      } else if point.y > frame.size.height - kToolbarHeight {
+      } else if point.y > frame.size.height - Constants.toolbarHeight {
         return controlView.hitTest(point, with: event)
       }
     }
@@ -547,7 +551,7 @@ class LocalPlayerView: UIView {
     }
     if isRecentInteraction {
       isRecentInteraction = false
-      perform(#selector(hideToolBar), with: self, afterDelay: TimeInterval(kToolbarDelay))
+      perform(#selector(hideToolBar), with: self, afterDelay: TimeInterval(Constants.toolbarDelay))
     } else {
       UIView.animate(withDuration: 0.5, animations: {() -> Void in
         self.toolbarView.alpha = 0
@@ -568,7 +572,7 @@ class LocalPlayerView: UIView {
     delegate?.hideNavigationBar(false)
     isRecentInteraction = true
     if playerState == .playing || playerState == .starting {
-     perform(#selector(hideToolBar), with: self, afterDelay: TimeInterval(kToolbarDelay))
+     perform(#selector(hideToolBar), with: self, afterDelay: TimeInterval(Constants.toolbarDelay))
     }
   }
 
@@ -613,7 +617,7 @@ class LocalPlayerView: UIView {
 
   override func observeValue(forKeyPath keyPath: String?, of object: Any?,
                              change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-    print("observeValueForKeyPath \(keyPath ?? "")")
+    print("observeValueForKeyPath \(String(describing: keyPath))")
     guard let currentItem = mediaPlayer?.currentItem, let object = object as? AVPlayerItem, object == currentItem else {
       return
     }
